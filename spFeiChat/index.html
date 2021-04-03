@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+
+</head>
+
+<body>
+  <input type="text" placeholder="输入内容">
+  <button>发送</button>
+  <div>显示结果</div>
+
+  <script>
+    var input = document.querySelector('input')
+    var btn = document.querySelector('button')
+    var div = document.querySelector('div')
+
+    const TYPE_ENTER = 0
+    const TYPE_LEAVE = 1
+    const TYPE_MSG = 2
+
+    // 1.创建websocket
+    var socket = new WebSocket('ws://localhost:5000')
+
+    // 2.open
+    socket.addEventListener('open', function () {
+      div.innerHTML = '服务连接成功'
+    })
+
+    // 3.发送信息
+    btn.addEventListener('click', function () {
+      var value = input.value
+      socket.send(value)
+      input.value = ''
+    })
+
+    // 4.接受信息
+    socket.addEventListener('message', function (e) {
+      console.log(e.data)
+      var data = JSON.parse(e.data)
+      var dv = document.createElement('div')
+      dv.innerText = data.msg + '------' + data.time
+
+      // 判断类型 给不同类型以不同样式
+      if (data.type === TYPE_ENTER) {
+        dv.style.color = 'green'
+      } else if(data.type === TYPE_LEAVE) {
+        dv.style.color = 'red'
+      } else {
+        dv.style.color = 'blue'
+      }
+
+      div.appendChild(dv)
+    })
+
+    // 5.断开连接
+    socket.addEventListener('close', function () {
+      div.innerHTML = '断开连接'
+    })
+  </script>
+</body>
+
+</html>
